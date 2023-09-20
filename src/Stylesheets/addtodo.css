@@ -1,0 +1,32 @@
+.editform {
+    padding: 1rem;
+    text-align: initial;
+}
+
+.input-container {
+    padding: 0.75rem;
+}
+
+.input-container > label {
+    display: block;
+}
+
+.input-container > input, .input-container > textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid gray;
+    border-radius: 4px;
+}
+
+.input-container > input:focus-visible, .input-container > textarea:focus-visible {
+    outline: 0px;
+}
+
+.back-button {
+    /* display: inline; */
+    text-align: initial;
+}
+
+.back-container {
+    padding: 1rem;
+}

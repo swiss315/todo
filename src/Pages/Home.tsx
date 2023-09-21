@@ -210,7 +210,7 @@ function Home() {
             {!add ? (
               <div className="tab-cont">
                 <div className="function-header d-flex justify-content-between">
-                  <button className="add-button" onClick={() => setAdd(true)}>
+                  <button className="add-button" onClick={() => {setAdd(true); setEdit({})}}>
                     Add New
                   </button>
                   <button className="add-button" onClick={() => setAdd(true)}>
@@ -227,7 +227,7 @@ function Home() {
           {!add ? (
               <div className="tab-cont">
               <div className="function-header d-flex justify-content-between">
-                <button className="add-button" onClick={() => setAdd(true)}>
+                <button className="add-button" onClick={() => {setAdd(true); setEdit({})}}>
                   Add New
                 </button>
                 <button className="add-button" onClick={() => setAdd(true)}>
@@ -295,7 +295,7 @@ function Home() {
           {!add ? (
               <div className="tab-cont">
               <div className="function-header d-flex justify-content-between">
-                <button className="add-button" onClick={() => setAdd(true)}>
+                <button className="add-button" onClick={() => {setAdd(true); setEdit({})}}>
                   Add New
                 </button>
                 <button className="add-button" onClick={() => setAdd(true)}>

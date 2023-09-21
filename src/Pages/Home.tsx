@@ -5,6 +5,7 @@ import "../Stylesheets/index.css";
 import { FaEllipsisV } from "react-icons/fa";
 import Dropdown from "react-bootstrap/Dropdown";
 import AddTodo from "../Components/AddTodo.tsx";
+// import { log } from "console";
 
 function Home() {
   interface TodoItem {
@@ -15,6 +16,7 @@ function Home() {
   }
   const [activeTab, setActiveTab] = useState("home");
   const [add, setAdd] = useState<Boolean>(false);
+  const [editid, setEdit] = useState<TodoItem | {}>({})
   const [data, setData] = useState<TodoItem[]>([
     {
       id: 1,
@@ -43,11 +45,18 @@ function Home() {
   ]);
   const [activedata, setActiveData] = useState<TodoItem[]>([]);
 
-  console.log(data, activedata);
+  const edit = (props: number) => { 
+    setAdd(true)
+    let found =data.find(obj => {
+    return obj.id === props;
+  }) || {}
+  console.log(found);
+  setEdit(found)
+}
+
+  // console.log(data, activedata);
 
   const handleSelect = (tabKey: string) => {
-    // Handle tab selection here
-    // console.log(tabKey);
     setActiveTab(tabKey);
     const newfilter = data.filter((value) => {
       return value.status.includes(tabKey);
@@ -57,33 +66,85 @@ function Home() {
   };
 
   const removeSecond = (id: number) => {
-    // 👇️ current is the current state array
-
     const filtered = data.filter((obj) => {
-      // 👇️ returns truthy for all elements that
-      // don't have an id equal to 2
       return obj.id !== id;
     });
     setData(filtered);
     console.log(data);
   };
 
-  const updateState = (id: number) => {
-    const newState = data.map((obj) => {
-      // 👇️ if id equals 2, update country property
-      if (obj.id === id) {
-        return { ...obj, status: "completed" };
+  const updateState = (id: number, info: string, section: string) => {
+    if (section === 'Active') {
+      console.log(info);
+      
+      if (info === "active") {
+        const newState = data.map((obj) => {
+          if (obj.id === id) {
+            return { ...obj, status: "active" } as TodoItem;
+          }
+          return obj;
+        });
+        console.log(newState, 'active');
+        setData(newState)
+        const newfilter = newState.filter((value) => {
+          return value.status.includes('completed');
+        });
+        console.log(newfilter, 'active');
+        
+        setActiveData(newfilter);
+      } else {
+        const newState = data.map((obj) => {
+          if (obj.id === id) {
+            return { ...obj, status: "completed" } as TodoItem;
+          }
+          return obj;
+        });
+        console.log(newState, 'completed');
+        
+        setData(newState)
+        const newfilter = newState.filter((value) => {
+          return value.status.includes('active');
+        });
+        console.log(newfilter, 'completed');
+        setActiveData(newfilter);
       }
 
-      // 👇️ otherwise return the object as is
-      return obj;
-    });
-
-    setData(newState);
+    } else {
+      if (info === "completed") {
+        const newState = data.map((obj) => {
+          if (obj.id === id) {
+            return { ...obj, status: "completed" } as TodoItem;
+          }
+          return obj;
+        });
+  
+        setData(newState);
+      } else {
+        const newState = data.map((obj) => {
+          if (obj.id === id) {
+            return { ...obj, status: "active" } as TodoItem;
+          }
+          return obj;
+        });
+        setData(newState);
+      }
+    }
+    
   };
 
-  const create = (props: TodoItem) => {
-    setData((current) => [...current, props]);
+  const create = (props: TodoItem, editinfo: TodoItem) => {
+    if (Object.keys(editinfo).length === 0) {
+      setData((current) => [...current, props]);
+    } else {
+      const newState = data.map((obj) => {
+        if (obj.id === editinfo.id) {
+          return { ...obj, status: "active", Header: props.Header, description: props.description } as TodoItem;
+        }
+        return obj;
+      });
+      setData(newState)
+    }
+
   };
 
   const listdata = data.map((data, index) => {
@@ -106,9 +167,17 @@ function Home() {
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
-                <Dropdown.Item as="div">Edit</Dropdown.Item>
-                <Dropdown.Item onClick={() => updateState(data.id)}>
-                  Mark completed
+                <Dropdown.Item as="div" onClick={() => edit(data.id)}>Edit</Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    data.status === "completed"
+                      ? updateState(data.id, "active", "All")
+                      : updateState(data.id, "completed", "All");
+                  }}
+                >
+                  {data.status === "completed"
+                    ? "Mark active"
+                    : "Mark completed"}
                 </Dropdown.Item>
                 <Dropdown.Item
                   as="div"
@@ -127,7 +196,7 @@ function Home() {
   });
 
   return (
-    <div style={{height:'100vh', backgroundColor: 'white'}}>
+    <div style={{ height: "100vh", backgroundColor: "white" }}>
       <h3>todo</h3>
       <div className="todo-container">
         <Tabs
@@ -151,11 +220,12 @@ function Home() {
                 <div className="list-container">{listdata}</div>
               </div>
             ) : (
-              <AddTodo onHide={() => setAdd(false)} create={create} />
+              <AddTodo onHide={() => setAdd(false)} create={create} editinfo={editid}  />
             )}
           </Tab>
           <Tab eventKey="active" title="Active">
-            <div className="tab-cont">
+          {!add ? (
+              <div className="tab-cont">
               <div className="function-header d-flex justify-content-between">
                 <button className="add-button" onClick={() => setAdd(true)}>
                   Add New
@@ -187,15 +257,22 @@ function Home() {
                             </Dropdown.Toggle>
 
                             <Dropdown.Menu>
-                              <Dropdown.Item href="#/action-1">
-                                Edit
-                              </Dropdown.Item>
-                              <Dropdown.Item href="#/action-2">
-                                Mark completed
+                              <Dropdown.Item as="div" onClick={() => edit(data.id)}>Edit</Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  data.status === "completed"
+                                    ? updateState(data.id, "active", 'Active')
+                                    : updateState(data.id, "completed", 'Active');
+                                }}
+                              >
+                                {data.status === "completed"
+                                  ? "Mark active"
+                                  : "Mark completed"}
                               </Dropdown.Item>
                               <Dropdown.Item
-                                href="#/action-3"
+                                as="div"
                                 className="bg-danger text-white"
+                                onClick={() => removeSecond(data.id)}
                               >
                                 Delete
                               </Dropdown.Item>
@@ -209,9 +286,14 @@ function Home() {
                 })}
               </div>
             </div>
+            ) : (
+              <AddTodo onHide={() => setAdd(false)} create={create} editinfo={editid} />
+            )}
+            
           </Tab>
           <Tab eventKey="completed" title="Completed">
-            <div className="tab-cont">
+          {!add ? (
+              <div className="tab-cont">
               <div className="function-header d-flex justify-content-between">
                 <button className="add-button" onClick={() => setAdd(true)}>
                   Add New
@@ -241,16 +323,24 @@ function Home() {
                             <Dropdown.Toggle as="div" id="dropdown-basic">
                               <FaEllipsisV />
                             </Dropdown.Toggle>
+
                             <Dropdown.Menu>
-                              <Dropdown.Item href="#/action-1">
-                                Edit
-                              </Dropdown.Item>
-                              <Dropdown.Item href="#/action-2">
-                                Mark completed
+                              <Dropdown.Item as="div" onClick={() => edit(data.id)}>Edit</Dropdown.Item>
+                              <Dropdown.Item
+                                onClick={() => {
+                                  data.status === "completed"
+                                  ? updateState(data.id, "active", 'Active')
+                                  : updateState(data.id, "completed", 'Active');
+                                }}
+                              >
+                                {data.status === "completed"
+                                  ? "Mark active"
+                                  : "Mark completed"}
                               </Dropdown.Item>
                               <Dropdown.Item
-                                href="#/action-3"
+                                as="div"
                                 className="bg-danger text-white"
+                                onClick={() => removeSecond(data.id)}
                               >
                                 Delete
                               </Dropdown.Item>
@@ -264,6 +354,10 @@ function Home() {
                 })}
               </div>
             </div>
+            ) : (
+              <AddTodo onHide={() => setAdd(false)} create={create} editinfo={editid} />
+            )}
+            
           </Tab>
         </Tabs>
       </div>
